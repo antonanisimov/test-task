@@ -4,11 +4,6 @@
 - Installed Vagrant
 - Installed VirtualBox
 
-
-
-Exchange: my-amq
-Queue: my-queue
-
 ---
 ## Runtime project
 Create VMs 
