@@ -1,7 +1,8 @@
 # Test task
 
 ## Requirements for running:
-- Installed Ansible
+- Installed Vagrant
+- Installed VirtualBox
 
 
 
