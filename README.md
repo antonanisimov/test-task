@@ -61,3 +61,8 @@ run -f
 > ./producer -count *'count'*
 ## Consumer (application Go)
 ![This is an image](scheme.png)
+
+## RabbitMQ
+Exchange: my-amq<br>
+Queue: my-queue<br>
+Port: 5672
