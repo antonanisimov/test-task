@@ -10,6 +10,11 @@
 > **vagrant up**<br>
 
 ---
+## How this working
+![This is an image](images/scheme.png)
+<br>
+
+---
 ## Increase count workers
 Need edit Vagrantfile, parametr:<br>
 **COUNT = N** - default "1". Running one worker VM. This Needs it for increase count worker VM.
@@ -48,8 +53,11 @@ Exchange: my-amq<br>
 Queue: my-queue<br>
 Port: 5672
 
+--- 
+# Dashboards
+![This is an image](images/rabbitmq.png)
+![This is an image](images/node_exporter.png)
 
----
-## How this working
-![This is an image](images/scheme.png)
-<br>
+
+
+
