@@ -38,7 +38,7 @@ Create two Golang applications (producer & consumer).
 running ansible
 > ./producer -count *'count'*
 ## Consumer (application Go)
-> ./condumer 
+> ./consumer 
 <br>
 ## Settings for RabbitMQ
 Exchange: my-amq<br>

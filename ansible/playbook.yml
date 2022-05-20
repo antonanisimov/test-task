@@ -19,9 +19,6 @@
     - prometheus
     - grafana
 
-- hosts: all
-  roles: 
-    - node_exporter
 
 - hosts: worker_group
   gather_facts: false
