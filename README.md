@@ -51,5 +51,5 @@ Port: 5672
 
 ---
 ## How this working
-![This is an image](scheme.png)
+![This is an image](images/scheme.png)
 <br>
