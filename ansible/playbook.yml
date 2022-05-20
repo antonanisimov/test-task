@@ -1,0 +1,40 @@
+
+---
+- hosts: all
+  gather_facts: false
+  roles: 
+    - common
+    - golang
+ 
+- hosts: all
+  gather_facts: false
+  roles: 
+    - node_exporter
+
+- hosts: central
+  become: true
+  gather_facts: true
+  roles: 
+    - rabbitmq
+    - prometheus
+    - grafana
+
+- hosts: all
+  roles: 
+    - node_exporter
+
+- hosts: worker_group
+  gather_facts: false
+  roles:
+    - consumer
+
+- hosts: central
+  gather_facts: false
+  roles:
+    - producer
+
+
+    
+
+
+

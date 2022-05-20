@@ -1,0 +1,45 @@
+- name: Gather package facts
+  package_facts:
+    manager: apt
+
+- name: Install Prometheus
+  block:
+  - name: apt install prometheus
+    apt:
+      name: prometheus
+      state: latest
+      update_cache: yes
+      cache_valid_time: 3600
+
+  - name: start prometheus
+    systemd:
+      name: prometheus
+      state: started
+      enabled: yes
+
+  when: '"prometheus" not in ansible_facts.packages'
+
+# setting
+- name: Сreate config-file Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: "{{ prometheus_dir_configuration }}/prometheus.yml"
+    mode: 0400
+    owner: prometheus
+    group: prometheus
+  notify: restart_prometheus
+
+- name: Enable service httpd, and not touch the state
+  become: true
+  delegate_to: central
+  systemd:
+    name: prometheus-node-exporter 
+    state: stopped
+    enabled: no
+
+
+
+
+
+
+

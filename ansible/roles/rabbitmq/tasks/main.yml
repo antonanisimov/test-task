@@ -1,0 +1,91 @@
+
+- name: Gather package facts
+  package_facts:
+    manager: apt
+
+- name: Install RabbitMQ
+  block:
+  - name: Add RabbitMQ apt repos key
+    apt_key:
+      url: "{{ item }}"
+      state: present
+    with_items:
+      - "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key"
+      - "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key"
+
+  - name: Add RabbitMQ apt repository
+    apt_repository:
+      repo: "{{ item }}"
+      state: present
+      update_cache: yes
+    with_items:
+      - "deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu {{ ubuntu_distribution }} main"
+      - "deb-src https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu {{ ubuntu_distribution }} main"
+      - "deb https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu {{ ubuntu_distribution }} main"
+      - "deb-src https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu {{ ubuntu_distribution }} main"
+
+  - name: Make sure LC_ALL locale is set to UTF-8
+    command:
+      cmd: update-locale LC_ALL=en_US.UTF-8
+
+  - name: Install rabbitmq-server package
+    apt:
+      name: rabbitmq-server
+      state: present
+
+  - name: Start rabbitmq-server 
+    service:
+      name: rabbitmq-server
+      state: started
+      enabled: yes
+      
+  - name: Setup rabbitmq user with admin access 
+    rabbitmq_user:
+      user: "{{ rabbitmq_default_user }}"
+      password: "{{ rabbitmq_default_pass }}"
+      vhost: "{{ rabbitmq_default_vhost }}"
+      configure_priv: "{{ rabbitmq_configure_priv }}"
+      read_priv: "{{ rabbitmq_read_priv }}"
+      write_priv: "{{ rabbitmq_write_priv }}"
+      tags: "{{ rabbitmq_default_user_tags }}"
+      state: present
+      node: "rabbit@central"
+  
+  # setting
+  - name: Enable prometheus-plugin
+    rabbitmq_plugin:
+      new_only: yes # keeps previously installed plugins
+      name: rabbitmq_prometheus
+      state: enabled
+
+  - name: Enable management-plugin
+    rabbitmq_plugin:
+      new_only: yes # keeps previously installed plugins
+      name: rabbitmq_management
+      state: enabled
+    
+  - name: Create exchange
+    rabbitmq_exchange:
+      name: "my-amq"
+      exchange_type: topic
+      vhost: "{{ rabbitmq_default_vhost }}"
+      state: present
+
+  - name: Create queue
+    rabbitmq_queue:
+      name: my-queue
+      vhost: "{{ rabbitmq_default_vhost }}"
+      state: present 
+      
+  - name: Add binding for queue and exchange
+    rabbitmq_binding:
+      name: my-amq
+      destination: my-queue
+      routing_key: my-key
+      vhost: "{{ rabbitmq_default_vhost }}"
+      type: queue
+      state: present
+
+  when: '"rabbitmq-server" not in ansible_facts.packages'
+
+

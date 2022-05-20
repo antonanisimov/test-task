@@ -1,0 +1,22 @@
+- name: Copy project to VM
+  copy:
+    src: ../../../app/producer
+    dest: "{{ home_directory }}"
+
+- name: Build Producer application 
+  shell: go build .
+  args:
+    chdir: producer/
+
+- name: Check running process
+  shell: echo -n $(pgrep producer)
+  register: check_process
+
+# run if not running
+- name: Run Producer
+  shell: "nohup ./producer/producer -count {{ count_messages }} </dev/null >/dev/null 2>&1 &"
+  when: check_process.stdout == ""
+
+
+
+

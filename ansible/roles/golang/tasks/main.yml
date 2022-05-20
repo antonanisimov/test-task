@@ -1,0 +1,31 @@
+---
+- name: Check Golang
+  stat:
+    path: "/usr/local/go/bin/go"
+  register: stat_result
+
+- name: Install golang
+  block:
+  - name: Remove old installation of Golang
+    become: true
+    file:
+      path: /usr/local/go
+      state: absent
+    
+  - name: Extract Golang 
+    become: true
+    unarchive:
+      src: "https://dl.google.com/go/go1.18.2.linux-amd64.tar.gz"
+      dest: /usr/local
+      copy: no
+      
+  - name: Create symbolic link to golang bin
+    file:
+      src: "/usr/local/go/bin/go"
+      dest: "/usr/bin/go"
+      state: link
+    become: true
+  when: not stat_result.stat.exists
+
+
+
