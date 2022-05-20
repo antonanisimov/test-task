@@ -1,0 +1,29 @@
+#jinja2: lstrip_blocks: "True"
+global:
+  scrape_interval: 30s
+  evaluation_interval: 5s
+  external_labels:
+    env: 'test'
+scrape_configs:
+- job_name: rabbitmq
+  scrape_interval: 15s
+  metrics_path: /metrics
+  static_configs:
+  - targets:
+    - central:15692
+    
+{% if prometheus_node_exporter_group %}
+- job_name: node_exporter
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  scheme: http
+  honor_labels: true
+  static_configs:
+  
+{% for host in groups[prometheus_node_exporter_group] %}
+  - targets:
+    - {{ hostvars[host]['ansible_all_ipv4_addresses'][1] }}:9100
+    labels:
+      node: {{ host }}
+{% endfor %}
+{% endif %}

@@ -1,0 +1,83 @@
+- name: Gather package facts
+  package_facts:
+    manager: apt
+
+- name: Install Grafana
+  block:
+  - name: Add the Grafana GPG key and APT repository
+    shell: |
+      curl https://packages.grafana.com/gpg.key | sudo apt-key add -
+      add-apt-repository "deb https://packages.grafana.com/oss/deb stable main"
+    args:
+      warn: no
+
+  - name: Install apt grafana
+    apt:
+      name: grafana
+      state: present
+      update_cache: yes
+
+  - name: Start Grafana
+    systemd:
+      name: grafana-server
+      state: started
+      enabled: yes
+  when: '"grafana" not in ansible_facts.packages'
+
+- name: Config default datasource for Grafana
+  template:
+    src: prometheus_ds.yml.j2
+    dest: /etc/grafana/provisioning/datasources/ansible.yml
+  notify: restart_grafana
+
+- name: Dashboards for Grafana
+  block:
+  - name: Create local grafana dashboard directory
+    file:
+      path: "{{ home_directory}}/tmp"
+      state: directory
+      mode: '0755'
+    register: _tmp_dashboards
+
+  - name: Copy a local dashboards
+    copy:
+      src: "{{ item }}.json"
+      dest: "{{ home_directory}}/tmp"
+      remote_src: no
+    with_items: "{{ grafana_dashboards }}"
+    
+  - name: Pause for 10 sec
+    pause:
+      seconds: 10
+
+  - name: Change admin password
+    shell: grafana-cli admin reset-admin-password {{ grafana_admin_password }}
+    notify: restart_grafana
+    no_log: true
+
+  - name: Import Grafana dashboard foo
+    grafana_dashboard:
+      grafana_url: "{{ grafana_url }}"
+      url_username: "admin"
+      url_password: "{{ grafana_admin_password }}"
+      state: present
+      commit_message: Updated by ansible
+      overwrite: yes
+      path: "{{ _tmp_dashboards.path }}/{{ item }}.json"
+    with_items: "{{ grafana_dashboards }}"
+  
+
+
+ 
+
+
+
+
+    
+
+
+
+  
+   
+
+

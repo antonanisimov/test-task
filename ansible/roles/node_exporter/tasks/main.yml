@@ -1,0 +1,66 @@
+---
+- name: Create the node_exporter group
+  become: true
+  group:
+    name: "{{ _node_exporter_system_group }}"
+    state: present
+    system: true
+  when: _node_exporter_system_group != "root"
+
+- name: Create the node_exporter user
+  become: true
+  user:
+    name: "{{ _node_exporter_system_user }}"
+    groups: "{{ _node_exporter_system_group }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+    home: /
+  when: _node_exporter_system_user != "root"
+
+- name: Download and unarchive node_exporter into /tmp location
+  unarchive:
+    src: "{{ node_exporter_download_url }}"
+    dest: /tmp
+    remote_src: true
+    mode: 0755
+
+- name: Move node_exporter binary into place
+  become: true
+  copy:
+    src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ arch }}/node_exporter"
+    dest: "{{ node_exporter_bin_path }}"
+    mode: 0755
+    owner: "{{ _node_exporter_system_user }}"
+    group: "{{ _node_exporter_system_group }}"
+    remote_src: true
+  notify: restart node_exporter
+
+- name: Copy the node_exporter systemd unit file.
+  become: true
+  template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+    mode: 0644
+  register: node_exporter_service
+
+- name: Reload systemd daemon if unit file is changed.
+  become: true
+  systemd:
+    daemon_reload: true
+  notify: restart node_exporter
+
+- name: Ensure node_exporter is running and enabled at boot
+  become: true
+  service:
+    name: node_exporter
+    state: started
+    enabled: "true"
+
+- name: Verify node_exporter
+  uri:
+    url: http://localhost:9100/
+    return_content: true
+  register: metrics_output
+  failed_when: "'Metrics' not in metrics_output.content"
