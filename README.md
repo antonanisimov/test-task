@@ -33,13 +33,13 @@ http://192.168.60.10:15672/
 
 ## Application Golang
 
-### Create two Golang applications.
+Create two Golang applications (producer & consumer).
 ## Producer (application Go)
 running ansible
 > ./producer -count *'count'*
 ## Consumer (application Go)
 > ./condumer 
-
+<br>
 ## Settings for RabbitMQ
 Exchange: my-amq<br>
 Queue: my-queue<br>
